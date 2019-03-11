@@ -29,8 +29,8 @@ dependencies {
 //		exclude module: "mongodb-driver"
 //		exclude module: "mongodb-driver-async"
 	}
-
-
+	compile("joda-time:joda-time:2.4")
+	compile("com.google.guava:guava:18.0")
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

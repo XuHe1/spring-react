@@ -3,20 +3,16 @@ package top.lovelily.react.springreact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import top.lovelily.react.springreact.model.Packet;
 import top.lovelily.react.springreact.model.PbData;
+import top.lovelily.react.springreact.repository.PacketRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.springframework.data.mongodb.core.query.Criteria.where;
+import java.util.*;
 
 /**
  * Desc: HelloController
@@ -31,35 +27,102 @@ public class HelloController {
     @Autowired
     private ReactiveMongoTemplate mongoTemplate;
 
+    @Autowired
+    private  MongoTemplate template;
+
+    @Autowired
+    private PacketRepository packetRepository;
+
     @GetMapping("/hello")
     public String hello() {
         return "hello world";
     }
 
     @GetMapping("/react")
-    public Mono<List<String>> change() {
+    public Mono<Packet> change() {
         System.out.println(Thread.currentThread().getName());
         System.out.println("begin....");
-        Mono<List<String>> stringMono = Mono.just(getData());
-        // event-driven, todo: asynchornize?
-        stringMono.subscribe(this::send);
-        stringMono.doOnNext(this::logError);
+
         System.out.println("finished....");
-        return stringMono;
+        return Mono.just(new Packet());
     }
 
 
     @GetMapping("/flux")
-    public Flux<Integer> change1() {
+    public Flux<Packet> change1() {
         System.out.println("begin....");
-        Flux<Integer> stringMono = Flux.just(1);
+        // async
+        Flux<Packet> packetFlux = getData();
+        // async
+        // packetFlux.map(Packet::get_id).subscribe(System.out::println);
         System.out.println("finished....");
-        return stringMono;
+
+        return packetFlux;
+    }
+
+
+    @GetMapping("/add")
+    public Flux<Packet> add() {
+        System.out.println("begin....");
+        // async
+        Flux<Packet> packetFlux = save();
+        // async
+        packetFlux.map(Packet::get_id).subscribe(System.out::println);
+        System.out.println("finished....");
+        return Flux.just(new Packet());
+    }
+
+    @GetMapping("/add_sync")
+    public List<Packet> addSyn() {
+        System.out.println("begin....");
+        saveAsyn();
+        System.out.println("finished....");
+        return null;
+    }
+
+    @GetMapping("/show")
+    public List<Packet> show() {
+        System.out.println("begin....");
+        List<Packet> packetList = template.findAll(Packet.class);
+        System.out.println(packetList.size());
+        System.out.println("finished....");
+        return packetList;
+    }
+
+    private Flux<Packet> save() {
+        List<Packet> packetList = new ArrayList<>();
+        for (int i = 0; i < 10000; i ++) {
+            Packet packet = new Packet();
+            packet.setMessage("hello world.");
+            packet.set_id(UUID.randomUUID().toString());
+            packet.setRoutingKey("data-server.test.1");
+            PbData pbData = new PbData();
+            packet.setData(pbData);
+            packetList.add(packet);
+        }
+
+        return  packetRepository.saveAll(packetList);
+
+    }
+
+    private Collection<Packet> saveAsyn() {
+        List<Packet> packetList = new ArrayList<>();
+        for (int i = 0; i < 100000; i ++) {
+            Packet packet = new Packet();
+            packet.setMessage("hello world.");
+            packet.set_id(UUID.randomUUID().toString());
+            packet.setRoutingKey("data-server.test.1");
+            PbData pbData = new PbData();
+            packet.setData(pbData);
+            packetList.add(packet);
+        }
+
+        return template.insertAll(packetList);
     }
 
 
 
-    private List<String> getData() {
+    private Flux<Packet> getData() {
         Packet packet = new Packet();
 //        packet.setMessage("hello world.");
 //        packet.set_id("as1Ids23sasds");
@@ -71,12 +134,13 @@ public class HelloController {
        // Packet packet1 = mongoTemplate.findOne(Query.query(where("routingKey").is("data-server.test.1")), Packet.class);
 
 //        Mono<Packet> packetMono = mongoTemplate.insert(packet);
-        Mono<Packet> result =  mongoTemplate.findOne(Query.query(where("routingKey").is("data-server.test.1")), Packet.class).log();
-        System.out.println(result.subscribe(System.out::println));
-        List<String> stringList = new ArrayList<String>();
-        stringList.add("Hello World.");
-        stringList.add("Hello there.");
-        return stringList;
+
+        Flux<Packet> packetFlux  = packetRepository.findAll();
+        // Flux<Packet> packetFlux = mongoTemplate.findAll(Packet.class).log();
+
+        // Mono<Packet> packetMono =  mongoTemplate.findOne(Query.query(where("routingKey").is("data-server.test.1")), Packet.class).log();
+        return packetFlux;
+
     }
 
     private  int send(List<String> stringList) {

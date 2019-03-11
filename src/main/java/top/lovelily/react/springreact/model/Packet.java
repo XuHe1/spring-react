@@ -3,6 +3,8 @@ package top.lovelily.react.springreact.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * Desc: Packet
  * Author: xuhe
@@ -11,7 +13,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Packet {
+public class Packet implements Serializable{
     private String message;
     private String routingKey;
     private PbData data;

@@ -3,6 +3,8 @@ package top.lovelily.react.springreact.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * Desc: PbData
  * Author: xuhe
@@ -11,7 +13,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class PbData {
+public class PbData implements Serializable {
     	private String routingKey;
         private String msgMeta;
         private Gps gps;
