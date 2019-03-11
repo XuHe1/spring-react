@@ -1,0 +1,13 @@
+server:
+  port: 9000
+
+spring:
+  data:
+    mongodb:
+      #url: mongodb://ds_monitor:ehjYGdOeOW@mongo.test.getqood.com/ds_monitor_hdx
+# for mongo2.x
+      #host: mongo.test.getqood.com
+      host: 127.0.0.1
+      username: ds_monitor
+      password: ehjYGdOeOW
+      database: ds_monitor_hdx

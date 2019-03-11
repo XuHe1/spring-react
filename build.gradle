@@ -1,0 +1,38 @@
+plugins {
+	id 'org.springframework.boot' version '2.1.3.RELEASE'
+	id 'java'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'top.lovelily.react'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	// compile.exclude module: 'spring-boot-starter-reactor-netty'
+	compile.exclude module: 'org.mongodb:mongodb-driver:3.8.2'
+	compile.exclude group: 'org.apache.tomcat'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-jetty'
+	// mongo-reactive
+	implementation ('org.springframework.boot:spring-boot-starter-data-mongodb-reactive') {
+//		exclude module: "mongodb-driver"
+//		exclude module: "mongodb-driver-async"
+	}
+
+
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+}
