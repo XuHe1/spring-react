@@ -20,6 +20,21 @@ import java.util.*;
  * Date: 2019/2/19 3:12 PM
  * Version: 1.0
  * todo: 观察者模式
+ * publisher.
+ *
+ * publisher: produce data, eg: data repository
+ * subscriber: consume data, eg: http server
+ *
+ * Publisher:
+ * 1. Mono: 0 or 1
+ * 2. Flux: 1 or N
+ *
+ * Subscriber
+ * 1. http server as a Subscriber
+ * 2. call the subscribe() method
+ *
+ *
+ *
  */
 @RestController
 @RequestMapping
@@ -40,11 +55,24 @@ public class HelloController {
 
     @GetMapping("/react")
     public Mono<Packet> change() {
-        System.out.println(Thread.currentThread().getName());
+        System.out.println(Thread.currentThread().getName()); // http-nio-9000-exec-1
         System.out.println("begin....");
-
+        Mono<Packet> mono = remoteCall();
+        mono.subscribe(); // 订阅并触发序列， if not subscribe , publisher (last line) does not exec, or block() also make publisher exec
         System.out.println("finished....");
+        // webflux also server as a subscriber.
+        // return mono;
         return Mono.just(new Packet());
+    }
+
+
+    private Mono<Packet> remoteCall() {
+       return Mono.just(new Packet()).flatMap(packet -> {
+            System.out.println(Thread.currentThread().getName() + ": a remote call");
+            packet.set_id(UUID.randomUUID().toString());
+            // int a = 10 / 0;
+            return Mono.just(packet);
+        });
     }
 
 
